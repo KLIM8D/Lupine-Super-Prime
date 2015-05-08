@@ -10,11 +10,11 @@ type RedisConf struct {
 }
 
 type RedisItem struct {
-	Key   float64
+	Key   uint64
 	Value interface{}
 }
 
 type Configuration struct {
 	ConfigPath string
-	Redis      RedisConf
+	Redis      *RedisConf
 }

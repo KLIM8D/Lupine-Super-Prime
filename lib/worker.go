@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	DEBUG = true
+	DEBUG = false
+	INFO  = true
 )
 
 func (b *Base) SpawnWorkers() {
-	for i := 0.0; i < b.NWorkers; i++ {
+	for i := uint32(0); i < b.NWorkers; i++ {
 		go b.CalculatePrime()
 	}
 }
@@ -66,13 +67,19 @@ func (b *Base) CalculatePrime() {
 			if DEBUG {
 				fmt.Printf("(calc) w.End: %v\n", w.End)
 				fmt.Printf("(calc) n: %v\n", n)
-				fmt.Printf("(calc) done: %v\n", done)
+				fmt.Printf("(calc) done: %#v\n", done)
 				time.Sleep(1 * time.Second)
 			}
 		}
 		b.Done <- w
-		time.Sleep(1 * time.Second)
-		break
+		time.Sleep(3 * time.Second)
+		info("(calc) primes: %v", "")
+		for _, p := range b.Primes {
+			if p != nil {
+				info("%v ", p)
+			}
+		}
+		info("%v\n", "")
 	}
 }
 
@@ -85,6 +92,12 @@ func findK(n, k *big.Int) *big.Int {
 	}
 
 	return k
+}
+
+func info(format string, a ...interface{}) {
+	if INFO {
+		fmt.Fprintf(os.Stdout, format, a...)
+	}
 }
 
 func debug(format string, a ...interface{}) {

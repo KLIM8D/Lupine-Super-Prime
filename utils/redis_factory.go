@@ -41,9 +41,7 @@ func (conf *RedisConf) Add(item *RedisItem) (err error) {
 	c := conf.Pool.Get()
 	defer c.Close()
 
-	c.Send("SET", item.Key, item)
-
-	if _, err := c.Do("EXEC"); err != nil {
+	if _, err := c.Do("SET", item.Key, item); err != nil {
 		panic(err.Error())
 	}
 

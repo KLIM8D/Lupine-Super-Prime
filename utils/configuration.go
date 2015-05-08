@@ -21,8 +21,8 @@ func (self *Configuration) readConfiguration() (*Configuration, error) {
 		if err = json.Unmarshal(content, &conf); err != nil {
 			return nil, err
 		} else {
-			self.Redis = conf.Redis
-			return self, nil
+			conf.Redis = NewFactory(conf.Redis.Host)
+			return &conf, nil
 		}
 	}
 }
