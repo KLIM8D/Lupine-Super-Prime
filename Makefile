@@ -42,6 +42,9 @@ test:
 benchmark:
 	go test -v -run=XXX -bench=. ./...
 
+clean:
+	rm -r ./bin/*
+
 vendor_clean:
 	rm -dRf ./$(DEPS_FOLDER)/
 
