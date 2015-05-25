@@ -1,6 +1,8 @@
 package lib
 
-import "fmt"
+import (
+	"errors"
+)
 
 type Node struct {
 	prev  *Node
@@ -18,14 +20,13 @@ func (n *Node) Prev() *Node {
 
 type CircularList struct {
 	len  uint64
-	root Node
+	root *Node
 }
 
 func (c *CircularList) Len() uint64 { return c.len }
 
 func (c *CircularList) Init() *CircularList {
-	c.root.next = &c.root
-	c.root.prev = &c.root
+	c.root = nil
 	c.len = 0
 	return c
 }
@@ -34,7 +35,7 @@ func (c *CircularList) Tail() *Node {
 	if c.len == 0 {
 		return nil
 	}
-	return &c.root
+	return c.root
 }
 
 func (c *CircularList) Head() *Node {
@@ -44,35 +45,32 @@ func (c *CircularList) Head() *Node {
 	return c.root.Next()
 }
 
-func (c *CircularList) Insert(n *Node) {
+func (c *CircularList) Insert(n *Node) error {
 	if n == nil {
-		return
+		return errors.New("Can't insert <nil>")
 	}
 
 	if c.len == 0 {
 		n.next = n
 		n.prev = n
-		c.root = *n
+		c.root = n
 	} else {
-		//Set n.prev to point to current root (last element)
-		n.prev = &c.root
+		e := c.root
 
-		//Set n.next to point to Head
-		n.next = c.root.next
-
+		//Set newnode to point to current root (last element)
+		n.prev = e
+		//Set newnode.next to point to Head
+		n.next = e.next
 		//Set current root (last element) next's element to be n
-		c.root.next = n
-
-		fmt.Printf("mem: %v - cRoot: %v\n", &c.root, c.root)
-		fmt.Printf("mem: %v - n: %v\n", &n, n)
-
+		e.next = n
 		//Set root (last element) to n
-		c.root = *n
-
+		c.root = n
 		//Set Head.prev to point to root (n)
-		c.root.next.prev = &c.root
+		c.root.next.prev = c.root
 	}
 	c.len++
+
+	return nil
 }
 
 func (c *CircularList) Remove() *Node {
@@ -89,11 +87,8 @@ func (c *CircularList) Remove() *Node {
 	e.prev = nil
 
 	//Set root element to e-1
-	c.root = *t
+	c.root = t
 	c.len--
 
-	fmt.Printf("T: %v\n", t)
-	fmt.Printf("E: %v\n", e)
-
-	return &e
+	return e
 }

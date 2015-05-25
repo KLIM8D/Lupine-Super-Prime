@@ -5,7 +5,8 @@
 
 APP  = Lupine-Super-Prime
 DEPS_FOLDER = .vendor
-DEPS = github.com/garyburd/redigo/redis
+DEPS = github.com/garyburd/redigo/redis \
+	   github.com/stretchr/testify/assert
 
 # Prepend our _vendor directory to the system GOPATH
 # so that import path resolution will prioritize
