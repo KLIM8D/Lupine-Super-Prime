@@ -12,11 +12,10 @@ import (
 )
 
 const (
-	BUFFERSIZE  = 128
-	NSCHEDULERS = 1
-	NWORKERS    = 1
-	NPRIMES     = 1000
-	CONFIGFILE  = "config.json"
+	BUFFERSIZE = 128 //How large the pool is which holds the work
+	//NSCHEDULERS = 1   //Number of schedulers to spawn
+	NWORKERS   = 1 //Number of workers which should be spawned by the scheulder
+	CONFIGFILE = "config.json"
 )
 
 func main() {
@@ -37,7 +36,6 @@ func main() {
 	base.Primes = append(base.Primes, big.NewInt(2))
 	base.Primes = append(base.Primes, big.NewInt(3))
 	base.Primes = append(base.Primes, big.NewInt(5))
-	base.PIndex = 2
 
 	base.LowestKey = big.NewInt(0)
 	base.KeyMutex = &sync.Mutex{}
@@ -45,8 +43,10 @@ func main() {
 	base.PrevEnd = big.NewInt(7)
 	base.PrevEndMutex = &sync.Mutex{}
 
-	for i := 0; i < NSCHEDULERS; i++ {
-		s := &lib.Scheduler{Base: base}
+	for i := 0; i < conf.Scheduler.Amount; i++ {
+		s := &lib.Scheduler{Base: base, IsMaster: conf.Scheduler.Master}
+		s.Key = 0
+		s.NewPrimes = make(chan bool)
 		go s.Start()
 	}
 

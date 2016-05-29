@@ -9,8 +9,8 @@ import (
 type Base struct {
 	Work     chan PrimeCalc
 	Done     chan PrimeCalc
+	SockRecv chan bool
 	Primes   []*big.Int
-	PIndex   uint64
 	NWorkers uint32
 
 	LowestKey *big.Int
@@ -23,8 +23,11 @@ type Base struct {
 }
 
 type Scheduler struct {
-	Base  *Base
-	Queue *MinHeap
+	Base      *Base
+	Queue     *MinHeap
+	NewPrimes chan bool
+	Key       int64
+	IsMaster  bool
 }
 
 type PrimeCalc struct {
@@ -32,4 +35,14 @@ type PrimeCalc struct {
 	Start  big.Int
 	End    big.Int
 	Result []*big.Int
+}
+
+type NetworkSync struct {
+	masters []SyncHost
+	slaves  []SyncHost
+}
+
+type SyncHost struct {
+	ip   string
+	port int16
 }

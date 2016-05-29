@@ -69,3 +69,17 @@ func (conf *RedisConf) Exists(key string) (bool, error) {
 		return r.(int64) == 1, nil
 	}
 }
+
+/*
+	Adds an element as the last element of the set
+*/
+func (conf *RedisConf) LPush(key int64, val ...string) (int64, error) {
+	c := conf.Pool.Get()
+	defer c.Close()
+
+	if r, err := c.Do("LPUSH", key, val); err != nil {
+		return -1, err
+	} else {
+		return r.(int64), nil
+	}
+}

@@ -14,7 +14,13 @@ type RedisItem struct {
 	Value interface{}
 }
 
+type SchedulerConf struct {
+	Amount int
+	Master bool
+}
+
 type Configuration struct {
 	ConfigPath string
 	Redis      *RedisConf
+	Scheduler  *SchedulerConf
 }

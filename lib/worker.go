@@ -27,6 +27,7 @@ func (b *Base) CalculatePrime() {
 		n := &w.Start
 		i := 0
 
+		debug("(worker) base.Primes: %v\n", b.Primes)
 		for !done {
 			debug("(calc) n: %v\n", n)
 			debug("(calc) k: %v\n", k)

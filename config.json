@@ -1,5 +1,9 @@
 {
     "Redis": {
         "Host": "127.0.0.1:42024"
+    },
+    "Scheduler": {
+        "Amount": 1,
+        "Master": false
     }
  }

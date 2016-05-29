@@ -9,10 +9,11 @@ import (
 
 const (
 	WORKSIZE = 10
+	LISTSIZE = 1000
 )
 
 var (
-	newPrimes chan bool
+	nelements int16
 )
 
 func (s *Scheduler) Start() {
@@ -20,15 +21,21 @@ func (s *Scheduler) Start() {
 	heap.Init(s.Queue)
 	w := s.CreateWork()
 
+	go s.StoreWork()
+
 	for {
 		select {
 		case r := <-s.Base.Done:
-			heap.Push(s.Queue, r)
-			newPrimes <- true
+			s.Queue.Push(r)
+			s.NewPrimes <- true
 			debug("(sche) Recv done work\n --- Start: %v\n --- End: %v\n --- Result: %v\n", r.Start, r.End, r.Result)
 		case s.Base.Work <- w:
-			w = s.CreateWork()
-			debug("(sche) Adding work\n --- Start: %v\n --- End: %v\n", w.Start, w.End)
+			if s.IsMaster {
+				w = s.CreateWork()
+				debug("(sche) Adding work\n --- Start: %v\n --- End: %v\n", w.Start, w.End)
+			} else {
+				//Sync with master
+			}
 		}
 	}
 }
@@ -49,22 +56,33 @@ func (s *Scheduler) CreateWork() PrimeCalc {
 /*
 Ideas:
 Store primes in lists in redis. Each list contains 1000 primes.
-The key should just be a int64 or float64, incremented from 1 to N
+The s.Key should just be a int64 or float64, incremented from 1 to N
 Problem with concurrency?
 */
 func (s *Scheduler) StoreWork() {
 	for {
-		<-newPrimes
+		<-s.NewPrimes
 		p := Sub(&s.Queue.Peek().Start, s.Base.LowestKey).Sign()
 		for p == 1 {
-			//for _, v := range r.Result {
-			//	if v != nil {
-			//		i = atomic.AddUint64(&s.Base.PIndex, 1)
-			//		s.Base.Primes = append(s.Base.Primes, v)
-			//		go s.Base.Factory.Add(&RedisItem{Key: i, Value: v})
-			//	}
-			//}
-			p = Sub(&s.Queue.Peek().Start, s.Base.LowestKey).Sign()
+			if nelements > LISTSIZE {
+				s.Key++
+				nelements = 0
+			}
+
+			prime := s.Queue.Pop().(PrimeCalc)
+			for _, v := range prime.Result {
+				if v != nil {
+					s.Base.Factory.LPush(s.Key, v.String())
+					s.Base.Primes = append(s.Base.Primes, v)
+					nelements++
+				}
+			}
+
+			if qelement := s.Queue.Peek(); qelement != nil {
+				p = Sub(&qelement.Start, s.Base.LowestKey).Sign()
+			} else {
+				p = 0
+			}
 		}
 	}
 }
